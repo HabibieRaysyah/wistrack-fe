@@ -42,18 +42,39 @@ export default function AddWisataModal({ onClose, onCreate }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <h2>Tambah Tempat Wisata</h2>
-        <p className="modal-sub">
-          Data baru akan masuk dengan status "Belum Dihubungi".
-        </p>
+        <div className="modal-header">
+          <div>
+            <h2>Tambah Tempat Wisata</h2>
+            <p className="modal-sub">
+              Data baru akan masuk dengan status "Belum Dihubungi".
+            </p>
+          </div>
+          <button className="modal-close-btn" onClick={onClose} title="Tutup">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-field">
             <label>Nama tempat wisata</label>
             <input
               value={form.nama}
               onChange={(e) => updateField("nama", e.target.value)}
               placeholder="cth. Curug Cimahi"
+              required
             />
           </div>
 
@@ -62,7 +83,7 @@ export default function AddWisataModal({ onClose, onCreate }) {
             <textarea
               value={form.alamat}
               onChange={(e) => updateField("alamat", e.target.value)}
-              placeholder="Alamat lengkap"
+              placeholder="Alamat lengkap lokasi wisata"
             />
           </div>
 
@@ -75,13 +96,28 @@ export default function AddWisataModal({ onClose, onCreate }) {
             />
           </div>
 
-          <div className="form-field">
-            <label>Website (opsional)</label>
-            <input
-              value={form.website}
-              onChange={(e) => updateField("website", e.target.value)}
-              placeholder="https://..."
-            />
+          <div className="form-grid">
+            <div className="form-field">
+              <label>Website (opsional)</label>
+              <input
+                value={form.website}
+                onChange={(e) => updateField("website", e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="form-field">
+              <label>Rating (opsional)</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="5"
+                value={form.rating}
+                onChange={(e) => updateField("rating", e.target.value)}
+                placeholder="cth. 4.5"
+              />
+            </div>
           </div>
 
           <div className="form-field">
@@ -93,19 +129,6 @@ export default function AddWisataModal({ onClose, onCreate }) {
             />
           </div>
 
-          <div className="form-field">
-            <label>Rating (opsional)</label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              max="5"
-              value={form.rating}
-              onChange={(e) => updateField("rating", e.target.value)}
-              placeholder="cth. 4.5"
-            />
-          </div>
-
           {error && <p className="error-text">{error}</p>}
 
           <div className="modal-actions">
@@ -113,7 +136,7 @@ export default function AddWisataModal({ onClose, onCreate }) {
               Batal
             </button>
             <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? "Menyimpan..." : "Simpan"}
+              {saving ? "Menyimpan..." : "Simpan Data"}
             </button>
           </div>
         </form>
@@ -121,3 +144,4 @@ export default function AddWisataModal({ onClose, onCreate }) {
     </div>
   );
 }
+
