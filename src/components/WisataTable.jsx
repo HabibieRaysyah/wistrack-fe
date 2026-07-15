@@ -90,7 +90,7 @@ export default function WisataTable({ items, onStatusChange, updatingId }) {
                 </td>
                 <td>
                   <div className="link-pills">
-                    {item.website && (
+                  {item.website ? (
                       <a className="link-pill" href={item.website} target="_blank" rel="noreferrer" title="Buka Website">
                         <svg className="link-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <circle cx="12" cy="12" r="10" />
@@ -99,7 +99,7 @@ export default function WisataTable({ items, onStatusChange, updatingId }) {
                         </svg>
                         <span>Web</span>
                       </a>
-                    )}
+          ): (<p >-</p>)}
 
                   </div>
                 </td>
