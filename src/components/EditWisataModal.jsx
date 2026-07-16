@@ -1,16 +1,14 @@
 import { useState } from "react";
 
-const EMPTY_FORM = {
-  nama: "",
-  alamat: "",
-  telp_wa: "",
-  website: "",
-  url_maps: "",
-  rating: "",
-};
-
-export default function AddWisataModal({ onClose, onCreate }) {
-  const [form, setForm] = useState(EMPTY_FORM);
+export default function EditWisataModal({ item, onClose, onSave }) {
+  const [form, setForm] = useState({
+    nama: item.nama || "",
+    alamat: item.alamat || "",
+    telp_wa: item.telp_wa || item.telp || "",
+    website: item.website || "",
+    url_maps: item.url_maps || "",
+    rating: item.rating != null ? String(item.rating) : "",
+  });
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -27,15 +25,14 @@ export default function AddWisataModal({ onClose, onCreate }) {
     setSaving(true);
     setError("");
     try {
-      // telp_wa is used for WhatsApp link; telp is the display label (same value)
-      await onCreate({
+      await onSave(item.id, {
         ...form,
         telp: form.telp_wa,
         rating: form.rating ? Number(form.rating) : null,
       });
       onClose();
     } catch (err) {
-      setError(err.message || "Gagal menyimpan data.");
+      setError(err.message || "Gagal menyimpan perubahan.");
     } finally {
       setSaving(false);
     }
@@ -46,10 +43,8 @@ export default function AddWisataModal({ onClose, onCreate }) {
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <h2>Tambah Tempat Wisata</h2>
-            <p className="modal-sub">
-              Data baru akan masuk dengan status "Belum Dihubungi".
-            </p>
+            <h2>Edit Tempat Wisata</h2>
+            <p className="modal-sub">Perbarui informasi tempat wisata ini.</p>
           </div>
           <button className="modal-close-btn" onClick={onClose} title="Tutup">
             <svg
@@ -100,7 +95,7 @@ export default function AddWisataModal({ onClose, onCreate }) {
 
           <div className="form-grid">
             <div className="form-field">
-              <label>Website (opsional)</label>
+              <label>Website</label>
               <input
                 value={form.website}
                 onChange={(e) => updateField("website", e.target.value)}
@@ -108,27 +103,26 @@ export default function AddWisataModal({ onClose, onCreate }) {
                 type="url"
               />
             </div>
-
             <div className="form-field">
-              <label>Rating (opsional)</label>
+              <label>Rating (0–5)</label>
               <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="5"
                 value={form.rating}
                 onChange={(e) => updateField("rating", e.target.value)}
                 placeholder="cth. 4.5"
+                type="number"
+                min="0"
+                max="5"
+                step="0.1"
               />
             </div>
           </div>
 
           <div className="form-field">
-            <label>Link Google Maps (opsional)</label>
+            <label>Link Google Maps</label>
             <input
               value={form.url_maps}
               onChange={(e) => updateField("url_maps", e.target.value)}
-              placeholder="https://www.google.com/maps/..."
+              placeholder="https://maps.google.com/..."
               type="url"
             />
           </div>
@@ -140,7 +134,7 @@ export default function AddWisataModal({ onClose, onCreate }) {
               Batal
             </button>
             <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? "Menyimpan..." : "Simpan Data"}
+              {saving ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
         </form>

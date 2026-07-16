@@ -1,12 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "./api";
+import Sidebar from "./components/Sidebar";
 import StatsBar from "./components/StatsBar";
 import FilterBar from "./components/FilterBar";
 import WisataTable from "./components/WisataTable";
 import AddWisataModal from "./components/AddWisataModal";
+import EditWisataModal from "./components/EditWisataModal";
+import ImportModal from "./components/ImportModal";
 import Pagination from "./components/Pagination";
 
 export default function App() {
+  const navigate = useNavigate();
+  const username = localStorage.getItem("wistrack_username") || "Admin";
+
   const [items, setItems] = useState([]);
   const [stats, setStats] = useState(null);
   const [search, setSearch] = useState("");
@@ -15,8 +22,10 @@ export default function App() {
   const [loadError, setLoadError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [editItem, setEditItem] = useState(null);
 
-  // Pagination states
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -31,37 +40,40 @@ export default function App() {
       setItems(wisataRes);
       setStats(statsRes);
     } catch (err) {
-      setLoadError(
-        err.message ||
-          "Gagal memuat data. Pastikan backend Express & MySQL sudah jalan."
-      );
+      setLoadError(err.message || "Gagal memuat data. Pastikan backend sudah jalan.");
     } finally {
       setLoading(false);
     }
   }, [activeStatus, search]);
 
   useEffect(() => {
-    const timeout = setTimeout(loadData, 250); // debounce search
+    const timeout = setTimeout(loadData, 250);
     return () => clearTimeout(timeout);
   }, [loadData]);
 
-  // Reset page to 1 when search query or status filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [search, activeStatus]);
 
-  async function handleStatusChange(item, newStatus) {
+  function handleLogout() {
+    localStorage.removeItem("wistrack_token");
+    localStorage.removeItem("wistrack_is_logged_in");
+    localStorage.removeItem("wistrack_username");
+    navigate("/");
+  }
+
+  async function handleStatusChange(item, newStatus, catatan) {
     setUpdatingId(item.id);
     const prevItems = items;
     setItems((cur) =>
       cur.map((i) => (i.id === item.id ? { ...i, status: newStatus } : i))
     );
     try {
-      await api.updateStatus(item.id, newStatus);
+      await api.updateStatus(item.id, newStatus, catatan);
       const statsRes = await api.getStats();
       setStats(statsRes);
     } catch (err) {
-      setItems(prevItems); // rollback
+      setItems(prevItems);
       alert(err.message || "Gagal mengubah status");
     } finally {
       setUpdatingId(null);
@@ -73,84 +85,95 @@ export default function App() {
     await loadData();
   }
 
-  // Calculate items to display on the current page
+  async function handleEdit(id, payload) {
+    await api.updateWisata(id, payload);
+    await loadData();
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm("Yakin ingin menghapus tempat wisata ini?")) return;
+    try {
+      await api.deleteWisata(id);
+      await loadData();
+    } catch (err) {
+      alert(err.message || "Gagal menghapus data.");
+    }
+  }
+
+  // Pagination calc
   const totalItems = items.length;
   const maxPage = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const activePage = currentPage > maxPage ? maxPage : currentPage;
-  
   const indexOfLastItem = activePage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
-    <div className="app-shell">
-      <header className="app-header">
-        <div>
-          <p className="eyebrow">Tracker Kemitraan Wisata</p>
-          <h1 className="header-title">Jelajah Prospek</h1>
-          <p className="subtitle">
-            Pantau progres kontak ke setiap tempat wisata — dari belum
-            dihubungi sampai deal, langsung lewat WhatsApp.
-          </p>
-        </div>
-        <button className="btn-add" onClick={() => setShowAddModal(true)}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          Tambah Tempat Wisata
-        </button>
-      </header>
-
-      <StatsBar stats={stats} />
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
+    <div className="layout">
+      <Sidebar
+        username={username}
+        onAddClick={() => setShowAddModal(true)}
+        onImportClick={() => setShowImportModal(true)}
+        onLogout={handleLogout}
         activeStatus={activeStatus}
-        onStatusChange={setActiveStatus}
+        search={search}
       />
 
-      {loadError ? (
-        <div className="wisata-table-wrap">
-          <div className="state-block">
-            <h3>Ups, gagal konek ke server</h3>
-            <p>{loadError}</p>
+      <main className="main-content">
+        {/* Page header */}
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Tracker Kemitraan Wisata</p>
+            <h1 className="header-title">Jelajah Prospek</h1>
+            <p className="subtitle">
+              Pantau progres kontak ke setiap tempat wisata — dari belum dihubungi sampai deal,
+              langsung lewat WhatsApp.
+            </p>
           </div>
         </div>
-      ) : loading ? (
-        <div className="wisata-table-wrap">
-          <div className="state-block">
-            <div className="spinner"></div>
-            <h3>Memuat data...</h3>
+
+        <StatsBar stats={stats} />
+
+        <FilterBar
+          search={search}
+          onSearchChange={setSearch}
+          activeStatus={activeStatus}
+          onStatusChange={setActiveStatus}
+        />
+
+        {loadError ? (
+          <div className="wisata-table-wrap">
+            <div className="state-block">
+              <h3>Ups, gagal konek ke server</h3>
+              <p>{loadError}</p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <>
-          <WisataTable
-            items={currentItems}
-            onStatusChange={handleStatusChange}
-            updatingId={updatingId}
-          />
-          <Pagination
-            currentPage={activePage}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
-        </>
-      )}
+        ) : loading ? (
+          <div className="wisata-table-wrap">
+            <div className="state-block">
+              <div className="spinner" />
+              <h3>Memuat data...</h3>
+            </div>
+          </div>
+        ) : (
+          <>
+            <WisataTable
+              items={currentItems}
+              onStatusChange={handleStatusChange}
+              updatingId={updatingId}
+              onEdit={setEditItem}
+              onDelete={handleDelete}
+            />
+            <Pagination
+              currentPage={activePage}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
+          </>
+        )}
+      </main>
 
       {showAddModal && (
         <AddWisataModal
@@ -158,7 +181,21 @@ export default function App() {
           onCreate={handleCreate}
         />
       )}
+
+      {showImportModal && (
+        <ImportModal
+          onClose={() => setShowImportModal(false)}
+          onImported={loadData}
+        />
+      )}
+
+      {editItem && (
+        <EditWisataModal
+          item={editItem}
+          onClose={() => setEditItem(null)}
+          onSave={handleEdit}
+        />
+      )}
     </div>
   );
 }
-
