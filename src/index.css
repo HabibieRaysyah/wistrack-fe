@@ -1268,42 +1268,105 @@ table.wisata-table {
     flex-direction: column;
   }
 
+  /* Sidebar jadi fixed drawer di mobile, tersembunyi by default */
   .sidebar {
-    width: 100%;
-    height: auto;
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 14px 16px;
-    gap: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    z-index: 200;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    padding: 24px 16px;
+    gap: 0;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
   }
 
-  .sidebar-brand { flex: 1; }
-  .sidebar-divider { display: none; }
-  .sidebar-section-label { display: none; }
-  .sidebar-nav { display: none; }
-  .sidebar-spacer { display: none; }
+  /* Sidebar terbuka */
+  .sidebar--open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+  }
+
+  /* Reset override yang tadinya untuk horizontal bar */
+  .sidebar-brand { flex: unset; }
+  .sidebar-divider { display: block; }
+  .sidebar-section-label { display: block; }
+  .sidebar-nav { display: flex; }
+  .sidebar-spacer { display: block; flex: 1; }
 
   .sidebar-actions {
-    flex-direction: row;
+    flex-direction: column;
     gap: 8px;
   }
 
   .sidebar-btn {
-    padding: 9px 12px;
-    font-size: 12.5px;
-    width: auto;
+    padding: 11px 14px;
+    font-size: 13.5px;
+    width: 100%;
   }
 
   .sidebar-footer {
-    padding: 0;
-    margin-left: auto;
+    padding: 8px 6px 0;
+    margin-left: 0;
   }
 
-  .sidebar-user-info { display: none; }
+  .sidebar-user-info { display: block; }
+
+  /* Overlay gelap di belakang sidebar */
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 20, 14, 0.45);
+    z-index: 199;
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* Mobile topbar — hanya muncul di mobile */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0 16px;
+    margin-bottom: 0;
+  }
+
+  .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .hamburger-btn:hover {
+    background: var(--color-surface-sunken);
+    border-color: var(--color-primary-soft);
+    color: var(--color-primary);
+  }
+
+  .mobile-topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
 
   .main-content {
-    padding: 20px 16px 60px;
+    padding: 16px 16px 60px;
   }
 
   .stats-grid {
@@ -1372,7 +1435,80 @@ table.wisata-table {
   }
 }
 
-/* ---------- Header actions ---------- */
+/* ---------- Filter kota dropdown ---------- */
+
+.kota-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.kota-select-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-ink-soft);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.kota-select {
+  appearance: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 11px 36px 11px 36px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  min-width: 160px;
+  max-width: 220px;
+  background-repeat: no-repeat;
+  background-position: right 32px center;
+  background-size: 9px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23566a5e'/%3E%3C/svg%3E");
+}
+
+.kota-select:focus {
+  outline: none;
+  border-color: var(--color-primary-soft);
+  box-shadow: 0 0 0 3px rgba(30, 77, 56, 0.1), var(--shadow-sm);
+}
+
+.kota-clear-btn {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  z-index: 1;
+}
+
+.kota-clear-btn:hover {
+  background: var(--color-surface-sunken);
+  color: var(--color-ink);
+}
+
+/* Mobile topbar — tersembunyi di desktop */
+.mobile-topbar {
+  display: none;
+}
+
+/* Sidebar overlay — tersembunyi di desktop */
+.sidebar-overlay {
+  display: none;
+}
 
 .header-actions {
   display: flex;

@@ -1,10 +1,16 @@
 import StatusSelect from "./StatusSelect";
 import { STATUS_CONFIG } from "../statusConfig";
 
+function toAbsoluteUrl(url) {
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  return `https://${url}`;
+}
+
 function buildWaLink(item) {
   if (!item.telp_wa) return null;
   const pesan = encodeURIComponent(
-    `Halo, kami dari [Nama Perusahaan] ingin menanyakan kerja sama terkait ${item.nama}.`
+    `Halo, kami dari Wondo ingin menanyakan kerja sama terkait ${item.nama}.`
   );
   return `https://wa.me/${item.telp_wa}?text=${pesan}`;
 }
@@ -125,7 +131,7 @@ export default function WisataTable({ items, onStatusChange, updatingId, onEdit,
                     {item.website ? (
                       <a
                         className="link-pill"
-                        href={item.website}
+                        href={toAbsoluteUrl(item.website)}
                         target="_blank"
                         rel="noreferrer"
                         title="Buka Website"
@@ -147,6 +153,32 @@ export default function WisataTable({ items, onStatusChange, updatingId, onEdit,
                           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                         </svg>
                         <span>Web</span>
+                      </a>
+                    ) : null}
+                    {item.url_maps ? (
+                      <a
+                        className="link-pill link-pill-maps"
+                        href={toAbsoluteUrl(item.url_maps)}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="Buka Google Maps"
+                      >
+                        <svg
+                          className="link-icon"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        <span>Maps</span>
                       </a>
                     ) : null}
                     {!item.website && !item.url_maps && (

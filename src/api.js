@@ -36,23 +36,11 @@ export const api = {
     return handle(res);
   },
 
-  async importWisata(file) {
-    const formData = new FormData();
-    formData.append("file", file);
-    const token = getToken();
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    const res = await fetch(`${BASE_URL}/wisata/import`, {
-      method: "POST",
-      headers,
-      body: formData,
-    });
-    return handle(res);
-  },
-
-  async getWisata({ status, q } = {}) {
+  async getWisata({ status, q, kota } = {}) {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
     if (q) params.set("q", q);
+    if (kota) params.set("kota", kota);
     const res = await fetch(`${BASE_URL}/wisata?${params.toString()}`, {
       headers: authHeaders(),
     });
@@ -66,17 +54,15 @@ export const api = {
     return handle(res);
   },
 
-  async updateStatus(id, status, catatan) {
-    const res = await fetch(`${BASE_URL}/wisata/${id}/status`, {
-      method: "PATCH",
+  async getById(id) {
+    const res = await fetch(`${BASE_URL}/wisata/${id}`, {
       headers: authHeaders(),
-      body: JSON.stringify({ status, catatan }),
     });
     return handle(res);
   },
 
   async createWisata(payload) {
-    const res = await fetch(`${BASE_URL}/wisata`, {
+    const res = await fetch(`${BASE_URL}/wisata/create`, {
       method: "POST",
       headers: authHeaders(),
       body: JSON.stringify(payload),
@@ -85,31 +71,59 @@ export const api = {
   },
 
   async updateWisata(id, payload) {
-    const res = await fetch(`${BASE_URL}/wisata/${id}`, {
-      method: "PUT",
+    const res = await fetch(`${BASE_URL}/wisata/${id}/update`, {
+      method: "POST",
       headers: authHeaders(),
       body: JSON.stringify(payload),
     });
     return handle(res);
   },
 
+  async updateStatus(id, status, catatan) {
+    const res = await fetch(`${BASE_URL}/wisata/${id}/status`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ status, catatan }),
+    });
+    return handle(res);
+  },
+
   async deleteWisata(id) {
-    const res = await fetch(`${BASE_URL}/wisata/${id}`, {
-      method: "DELETE",
+    const res = await fetch(`${BASE_URL}/wisata/${id}/delete`, {
+      method: "POST",
       headers: authHeaders(),
     });
     return handle(res);
   },
 
-  // Export — trigger browser download langsung
-  exportWisata({ status, q, format = "xlsx" } = {}) {
+  async importWisata(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const token = getToken();
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await fetch(`${BASE_URL}/wisata/import`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+    return handle(res);
+  },
+
+  exportWisata({ status, q, kota, format = "xlsx" } = {}) {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
     if (q) params.set("q", q);
+    if (kota) params.set("kota", kota);
     params.set("format", format);
     const token = getToken();
     if (token) params.set("token", token);
-    // Buka di tab baru supaya browser handle download
     window.open(`${BASE_URL}/wisata/export?${params.toString()}`, "_blank");
+  },
+
+  async getKotaList() {
+    const res = await fetch(`${BASE_URL}/wisata/kota/list`, {
+      headers: authHeaders(),
+    });
+    return handle(res);
   },
 };

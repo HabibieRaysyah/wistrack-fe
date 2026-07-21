@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "../api";
+import logo from '../public/favicon.png'
 
 export default function Sidebar({
   onAddClick,
@@ -7,34 +8,37 @@ export default function Sidebar({
   onLogout,
   username,
   activeStatus,
+  activeKota,
   search,
+  isOpen,
+  onClose,
 }) {
   const [exporting, setExporting] = useState(false);
 
   function handleExport(format) {
     setExporting(true);
     try {
-      api.exportWisata({ status: activeStatus || undefined, q: search || undefined, format });
+      api.exportWisata({
+        status: activeStatus || undefined,
+        kota: activeKota || undefined,
+        q: search || undefined,
+        format,
+      });
     } finally {
-      // Timeout singkat biar UI feedback keliatan
       setTimeout(() => setExporting(false), 1200);
     }
   }
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${isOpen ? " sidebar--open" : ""}`}>
       {/* Brand */}
       <div className="sidebar-brand">
         <div className="sidebar-logo">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
-            <line x1="9" y1="3" x2="9" y2="18" />
-            <line x1="15" y1="6" x2="15" y2="21" />
-          </svg>
+        <img src={logo} alt="" style={{width: "30px"}} />
         </div>
         <div>
-          <p className="sidebar-brand-name">Wistrack</p>
-          <p className="sidebar-brand-sub">Tracker Kemitraan</p>
+          <p className="sidebar-brand-name">Merchant Wondo</p>
+          <p className="sidebar-brand-sub">Data List Merchant</p>
         </div>
       </div>
 
@@ -82,7 +86,7 @@ export default function Sidebar({
         <div className="sidebar-export-group">
           <p className="sidebar-export-label">
             Export
-            {(activeStatus || search) && (
+            {(activeStatus || activeKota || search) && (
               <span className="sidebar-export-badge">filtered</span>
             )}
           </p>
